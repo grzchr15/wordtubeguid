@@ -2,22 +2,22 @@ summary Changes made to version 2.3.1 from alex.rabe
 
 = Introduction =
 
-  # To make media ids "alphanumeric" i removed hopefully all (int)AND intval statements.
+  # To make media ids "alphanumeric" i removed hopefully all (int) AND intval statements.
   # At sql statements i changes it to param=$value to param='$value'
   # changed statements like if($_POST[]) to if(isset($_POST[]))
 
 
 = Details =
 
-  *admin/functions.php
-  *admin/install.php  
-  *admin/manage.php
+  * admin/functions.php
+  * admin/install.php  
+  * admin/manage.php
 
-  *lib/functions.php
-  *lib/shortcodes.php
-  *lib/widget.php
-  *lib/wordtube.class.php
+  * lib/functions.php
+  * lib/shortcodes.php
+  * lib/widget.php
+  * lib/wordtube.class.php
      Caching needs to be more testing and bugfixing (function GetVidByID())
-  *myextractXML.php
+  * myextractXML.php
     make *.mp4 also possible
-  *wordtube.php
+  * wordtube.php
