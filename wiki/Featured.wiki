@@ -1,4 +1,4 @@
-summary Changes made to version 2.3.1 from alex.rabe
+#summary Changes made to version 2.3.1 from alex.rabe
 
 = Introduction =
 
