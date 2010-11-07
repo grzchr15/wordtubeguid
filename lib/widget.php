@@ -28,6 +28,7 @@ class wordTube_Widget extends WP_Widget {
 		$width   = (int) $instance['width'];
 		$height  = (int) $instance['height'];
 		
+		error_log("widget.php widget id=".$id);
 		$dbresult = $wordTube->GetVidByID($mediaid);
 
         echo $before_widget;

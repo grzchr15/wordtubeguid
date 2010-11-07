@@ -36,14 +36,16 @@ if ($playlist_id == 'most') {
 	$themediafiles = $wpdb->get_results("SELECT * FROM $wpdb->wordtube WHERE file LIKE '%.mp3%' ORDER BY vid DESC");
 // Otherwise gets flv
 } elseif ($playlist_id == 'video') {
-	$themediafiles = $wpdb->get_results("SELECT * FROM $wpdb->wordtube WHERE file LIKE '%.flv%' ORDER BY vid DESC");
+	$themediafiles = $wpdb->get_results("SELECT * FROM $wpdb->wordtube WHERE file LIKE '%.flv%' OR file LIKE '%.mp4%' ORDER BY vid DESC");
 // Shows all files when 0
 } elseif ($playlist_id == '0') {
 	$themediafiles = $wpdb->get_results( $wpdb->prepare ("SELECT * FROM $wpdb->wordtube ORDER BY vid DESC {$limit}") );
 // Otherwise gets playlist
 } else {
 	// Remove all evil code
-	$playlist_id = intval($_GET['id']);
+	//TODO remove intlimit: $playlist_id = intval($_GET['id']);
+	$playlist_id = isset($_GET['id']) ? $_GET['id'] : 0;
+	//TODO ????? mysql query save????
  	$playlist = $wpdb->get_row("SELECT * FROM $wpdb->wordtube_playlist WHERE pid = '$playlist_id'");
  	if ($playlist) {
 		$select  = " SELECT * FROM {$wpdb->wordtube} w";
