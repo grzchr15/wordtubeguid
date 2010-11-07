@@ -1,10 +1,10 @@
-#summary Changes made to version 2.3.1 from alex.rabe
+summary Changes made to version 2.3.1 from alex.rabe
 
 = Introduction =
 
-#To make media ids "alphanumeric" i removed hopefully all (int)AND intval statements.
-#At sql statements i changes it to param=$value to param='$value'
-#changed statements like if($_POST[]) to if(isset($_POST[]))
+# To make media ids "alphanumeric" i removed hopefully all (int)AND intval statements.
+# At sql statements i changes it to param=$value to param='$value'
+# changed statements like if($_POST[]) to if(isset($_POST[]))
 
 
 = Details =
