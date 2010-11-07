@@ -12,9 +12,10 @@
 ******************************************************************/
 function get_playlistname_by_ID($pid = 0) {
 	global $wpdb;
-	
-	$pid    = (int) $pid;
-	$result = $wpdb->get_var("SELECT playlist_name FROM $wpdb->wordtube_playlist WHERE pid = $pid "); 
+	error_log("get_playlistname_by_ID pid=".$pid);
+	//TODO remove int limit $pid    = (int) $pid;
+	$pid    = $pid;
+	$result = $wpdb->get_var("SELECT playlist_name FROM $wpdb->wordtube_playlist WHERE pid = '$pid' "); 
 	
 	return $result; 
 }
@@ -31,12 +32,13 @@ function wpt_filename($urlpath) {
 function get_playlist_for_dbx($mediaid) {
 	
 	global $wpdb;
-
+	error_log("get_playlist_for_dbx mediaid".print_r($mediaid,true));
 	// get playlist ID's 
 	$playids = $wpdb->get_col("SELECT pid FROM $wpdb->wordtube_playlist");
-
+	error_log("get_playlist_for_dbx playids".print_r($playids,true));
 	// to be sure
-	$mediaid = (int) $mediaid;
+	//TODO remote int limit $mediaid = (int) $mediaid;
+	$mediaid = $mediaid;
 	
 	// get checked ID's'
 	$checked_playlist = $wpdb->get_col("
@@ -44,7 +46,7 @@ function get_playlist_for_dbx($mediaid) {
 		FROM $wpdb->wordtube_playlist, $wpdb->wordtube_med2play
 		WHERE $wpdb->wordtube_med2play.playlist_id = pid AND $wpdb->wordtube_med2play.media_id = '$mediaid'
 		");
-		
+	error_log("get_playlist_for_dbx checked_playlist".print_r($checked_playlist,true));
 	if (count($checked_playlist) == 0) $checked_playlist[] = 0;
 		
 	$result = array ();
@@ -67,6 +69,13 @@ function get_playlist_for_dbx($mediaid) {
 
 	}
 }
+function generate_guid($length = 32, $mytype) {
+    $allowed = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    $guid = '';
+    for ( $i = 0; $i < $length; ++$i )
+        $guid .= $allowed[mt_rand(0, 61)];
+    return $guid;
+}
 /****************************************************************/
 /* Add video
 /****************************************************************/
@@ -82,13 +91,13 @@ function wt_add_media($wptfile_abspath, $wp_urlpath) {
 	$act_link		= '';
 	$act_width 		= 320;
 	$act_height 	= 240;
-	$act_counter 	= (int) $_POST['act_counter'];
-	$act_autostart 	= $_POST['autostart'];
-	$disableAds 	= $_POST['disableAds'];
-	if (empty($act_autostart)) $act_autostart = 0; // need now for sql_mode, see http://bugs.mysql.com/bug.php?id=18551
-	if (empty($disableAds)) $disableAds = 0;
-	$act_playlist 	= $_POST['playlist'];
-	$act_tags 		= addslashes(trim($_POST['act_tags']));
+	$act_counter 	= isset($_POST['act_counter']) ? (int) $_POST['act_counter'] : 0;
+	$act_autostart 	= isset($_POST['autostart']) ? 1 : 0;
+	$disableAds 	= isset($_POST['disableAds']) ?  1 : 0;
+	//TODO remove if (empty($act_autostart)) $act_autostart = 0; // need now for sql_mode, see http://bugs.mysql.com/bug.php?id=18551
+	//TODO remove if (empty($disableAds)) $disableAds = 0;
+	$act_playlist 	= isset($_POST['playlist']) ? $_POST['playlist'] : 0;
+	$act_tags 		= isset($_POST['act_tags']) ? addslashes(trim($_POST['act_tags'])) : "";
 	
 	if ($act_height < 20 ) $act_height = 20 ;
 	if ($act_width == 0 ) $act_width = 320 ;
@@ -131,10 +140,12 @@ function wt_add_media($wptfile_abspath, $wp_urlpath) {
 	 		wordTubeAdmin::render_error(__('ERROR : Upload failed. Check the file size','wpTube'));
 	}
 
-	$insert_video = $wpdb->query(" INSERT INTO $wpdb->wordtube ( name, creator, description, file, image, width, height, link, autostart, disableAds, counter )
-	VALUES ( '$act_name', '$act_creator', '$act_desc', '$act_filepath', '$act_image', '$act_width', '$act_height', '$act_link', '$act_autostart', $disableAds, '$act_counter' )");
+	$vid=generate_guid(32, "vid");
+	
+	$insert_video = $wpdb->query(" INSERT INTO $wpdb->wordtube ( vid, name, creator, description, file, image, width, height, link, autostart, disableAds, counter )
+	VALUES ( '$vid', '$act_name', '$act_creator', '$act_desc', '$act_filepath', '$act_image', '$act_width', '$act_height', '$act_link', '$act_autostart', '$disableAds', '$act_counter' )");
 	if ($insert_video != 0) {
- 		$video_aid = $wpdb->insert_id;  // get index_id
+ 		$video_aid = $vid;  // get index_id
 
         //hook for other plugin to update the fields
         do_action('wordtube_update_media_meta', $video_aid, $_POST);
@@ -152,7 +163,7 @@ function wt_add_media($wptfile_abspath, $wp_urlpath) {
 
 		if ($add_list) {
 			foreach ($add_list as $new_list) {
-				$wpdb->query(" INSERT INTO $wpdb->wordtube_med2play (media_id, playlist_id) VALUES ($video_aid, $new_list)");
+				$wpdb->query(" INSERT INTO $wpdb->wordtube_med2play (media_id, playlist_id) VALUES ('$video_aid', '$new_list')");
 			}
 		}
 	}
@@ -178,9 +189,9 @@ function wt_update_media( $media_id ) {
 	$act_link 		=	addslashes(trim($_POST['act_link']));
 	$act_counter 	=	(int) ($_POST['act_counter']);
 
-	$act_autostart 	= 	isset( $_POST['autostart'] );
+	$act_autostart 	= 	isset( $_POST['autostart'] ) ? 1 : 0;
 	$act_playlist 	= 	isset( $_POST['playlist'] ) ? (array)$_POST['playlist'] : array() ;
-	$disableAds 	=	isset( $_POST['disableAds'] );
+	$disableAds 	=	isset( $_POST['disableAds'] ) ? 1 : 0;
 
 	// Update tags
 	$act_tags 	= addslashes(trim($_POST['act_tags']));
@@ -191,7 +202,7 @@ function wt_update_media( $media_id ) {
         $act_autostart = 0; // need now for sql_mode, see http://bugs.mysql.com/bug.php?id=18551
 							
 	// Read the old playlist status
-	$old_playlist = $wpdb->get_col(" SELECT playlist_id FROM $wpdb->wordtube_med2play WHERE media_id = $media_id");
+	$old_playlist = $wpdb->get_col(" SELECT playlist_id FROM $wpdb->wordtube_med2play WHERE media_id = '$media_id'");
 	$old_playlist = ($old_playlist == false) ? array() : array_unique($old_playlist);
    
 	// Delete any ?
@@ -199,7 +210,7 @@ function wt_update_media( $media_id ) {
 
 	if ($delete_list) {
 		foreach ($delete_list as $del) {
-			$wpdb->query(" DELETE FROM $wpdb->wordtube_med2play WHERE playlist_id = $del AND media_id = $media_id ");
+			$wpdb->query(" DELETE FROM $wpdb->wordtube_med2play WHERE playlist_id = '$del' AND media_id = '$media_id' ");
 		}
 	}
 				
@@ -208,7 +219,7 @@ function wt_update_media( $media_id ) {
 
 	if ($add_list) {
 		foreach ($add_list as $new_list) {
-			$wpdb->query(" INSERT INTO $wpdb->wordtube_med2play (media_id, playlist_id) VALUES ($media_id, $new_list)");
+			$wpdb->query(" INSERT INTO $wpdb->wordtube_med2play (media_id, playlist_id) VALUES ('$media_id', '$new_list')");
 		}
 	}
 				
@@ -234,7 +245,7 @@ function wt_delete_media($act_vid, $deletefile) {
  	// Delete file
 	if ($deletefile) {
 
-		$act_videoset = $wpdb->get_row("SELECT * FROM $wpdb->wordtube WHERE vid = $act_vid ");
+		$act_videoset = $wpdb->get_row("SELECT * FROM $wpdb->wordtube WHERE vid = '$act_vid' ");
 
 		$act_filename = wpt_filename($act_videoset->file);
 		$abs_filename = str_replace(trailingslashit(get_option('siteurl')), ABSPATH, trim($act_videoset->file));
@@ -255,9 +266,9 @@ function wt_delete_media($act_vid, $deletefile) {
 
 	//TODO: The problem of this routine : if somebody change the path, after he uploaded some files
 
-	$wpdb->query("DELETE FROM $wpdb->wordtube_med2play WHERE media_id = $act_vid");
+	$wpdb->query("DELETE FROM $wpdb->wordtube_med2play WHERE media_id = '$act_vid'");
 			
-	$delete_video = $wpdb->query("DELETE FROM $wpdb->wordtube WHERE vid = $act_vid");
+	$delete_video = $wpdb->query("DELETE FROM $wpdb->wordtube WHERE vid = '$act_vid'");
 	// Delete tag relationships
 	wp_delete_object_term_relationships($act_vid, WORDTUBE_TAXONOMY);
 			
@@ -278,14 +289,15 @@ function wt_add_playlist() {
 	// Get input informations from POST
 	$p_name = addslashes(trim($_POST['p_name']));
 	$p_description = addslashes(trim($_POST['p_description']));
-	$p_playlistorder = $_POST['sortorder'];
-	if (empty($p_playlistorder)) $p_playlistorder = "ASC";
+	$p_playlistorder = isset($_POST['sortorder'])? $_POST['sortorder'] : "ASC"; 
+	if ($p_playlistorder <> "ASC") $p_playlistorder = "DESC";
 
 	// Add playlist in db
 	if(!empty($p_name)) {
-		$insert_plist = $wpdb->query(" INSERT INTO $wpdb->wordtube_playlist (playlist_name, playlist_desc, playlist_order) VALUES ('$p_name', '$p_description', '$p_playlistorder')"); 
+		$vidlist=generate_guid(32, "vidlist");
+		$insert_plist = $wpdb->query(" INSERT INTO $wpdb->wordtube_playlist (pid,playlist_name, playlist_desc, playlist_order) VALUES ('$vidlist','$p_name', '$p_description', '$p_playlistorder')"); 
 		if ($insert_plist != 0) {
-	 		$pid = $wpdb->insert_id;  // get index_id
+	 		$pid = $vidlist;  // get index_id
 			wordTubeAdmin::render_message( __('Playlist','wpTube').' '.$pid.__(' added successfully','wpTube'));
 		}
 	}
@@ -299,7 +311,8 @@ function wt_update_playlist() {
 	global $wpdb;
 
 	// Get input informations from POST
-	$p_id = (int) ($_POST['p_id']);
+	//TODO remove int limit $p_id = (int) ($_POST['p_id']);
+	$p_id = addslashes(trim($_POST['p_id']));
 	$p_name = addslashes(trim($_POST['p_name']));
 	$p_description = addslashes(trim($_POST['p_description']));
 	$p_playlistorder = $_POST['sortorder']; 
@@ -319,7 +332,7 @@ function wt_delete_playlist($act_pid) {
 
 	$text = '';
 
- 	$delete_plist = $wpdb->query("DELETE FROM $wpdb->wordtube_playlist WHERE pid = $act_pid");
+ 	$delete_plist = $wpdb->query("DELETE FROM $wpdb->wordtube_playlist WHERE pid = '$act_pid'");
 	if($delete_plist) {
 		wordTubeAdmin::render_message( __('Playlist','wpTube').' \''.$act_pid.'\' '.__('deleted successfully','wpTube'));
 	}

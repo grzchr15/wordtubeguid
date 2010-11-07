@@ -89,9 +89,10 @@ class wordTubeManage extends wordTubeAdmin  {
 		global $wpdb;
 		
 		$this->mode = isset ($_GET['mode']) ? trim($_GET['mode']) : false;
-
-		$this->act_vid = isset ($_GET['id']) ? (int) $_GET['id'] : 0;
-		$this->act_pid = isset ($_GET['pid']) ? (int) $_GET['pid'] : 0;
+		//TODO remove int limitation $this->act_vid = isset ($_GET['id']) ? (int) $_GET['id'] : 0;
+		$this->act_vid = isset ($_GET['id']) ? $_GET['id'] : 0;
+		//TODO remove int limitation $this->act_pid = isset ($_GET['pid']) ? (int) $_GET['pid'] : 0;
+		$this->act_pid = isset ($_GET['pid']) ? $_GET['pid'] : 0;
 		
 		//TODO:Include nonce !!!			
 		
@@ -316,7 +317,9 @@ class wordTubeManage extends wordTubeAdmin  {
 	
 		global $wpdb;
 
-		$media = $wpdb->get_row("SELECT * FROM $wpdb->wordtube WHERE vid = {$this->act_vid}");
+		$strshow_edit="SELECT * FROM $wpdb->wordtube WHERE vid = '$this->act_vid'";
+		error_log("manage.php show_edit =".$strshow_edit);
+		$media = $wpdb->get_row("SELECT * FROM $wpdb->wordtube WHERE vid = '$this->act_vid'");
 		$act_name = esc_attr(stripslashes($media->name));
 		$act_creator = esc_attr(stripslashes($media->creator));
 		$act_desc = esc_attr(stripslashes($media->description));
@@ -563,8 +566,10 @@ class wordTubeManage extends wordTubeAdmin  {
 
 		// get the tables		
 		$tables = $wpdb->get_results("SELECT * FROM $wpdb->wordtube_playlist ");
-		if ($this->mode == 'plyedit')	
-			$update = $wpdb->get_row("SELECT * FROM $wpdb->wordtube_playlist WHERE pid = {$this->act_pid} ");
+		if ($this->mode == 'plyedit')	{
+			//TODO remove int limit $update = $wpdb->get_row("SELECT * FROM $wpdb->wordtube_playlist WHERE pid = {'$this->act_pid'} ");
+			$update = $wpdb->get_row("SELECT * FROM $wpdb->wordtube_playlist WHERE pid = '$this->act_pid' ");
+		}
 		?>
 
 		<!-- Edit Playlist -->

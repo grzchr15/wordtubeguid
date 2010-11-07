@@ -45,7 +45,7 @@ function wt_get_options($option) {
 **************************************************************************************/
 function wt_GetVideo($id, $width = 0 , $height = 0) {
 	global $wpdb, $wordTube;
-
+	error_log("wt_GetVideo id=".$id);
 	$dbresult = $wordTube->GetVidByID($id);
 	if ($dbresult) {
 		if ($width == 0) $width = $dbresult->width;
@@ -127,11 +127,14 @@ function wt_get_related_media_list($user_args='') {
 	$default['use_cache'] = $wordTube->use_cache;
 
 	$args = wp_parse_args( $user_args, $defaults );
+	$str_args=print_r($args, true);
+	error_log("wt_get_related_media_list str_args=".$str_args);
 	extract($args);
 
 	// Get media or post data
 	if ($media_id != '' && $media_id != 0) {
-		$object_id = (int) $media_id;
+		//TODO remove int limitation $object_id = (int) $media_id;
+		$object_id = $media_id;
 		$src = 'media';
 	} else {
 		$object_id = (int) $post_id;
@@ -262,7 +265,7 @@ function wt_get_related_media_list($user_args='') {
 	Returns the tag list of a media
 **************************************************************************************/
 function get_the_media_tags($id) {
-
+//TODO get_the_media_tags ?????     $id = (int) $id;
  	$id = (int) $id;
 
 	if ( ! $id )

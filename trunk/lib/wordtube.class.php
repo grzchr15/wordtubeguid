@@ -73,8 +73,11 @@ class wordTubeClass {
 		$height = ( $height == 0 ) ? $this->options['media_height'] : $height;
 		$this->media = $media;
 		
-		if (!is_object($this->media) )
-			$this->media = $this->GetVidByID( intval($id) );
+		error_log("wordtube.class.php ReturnMedia id=".$id);
+		if (!is_object($this->media) ) {
+			//TODO remove int limit $this->media = $this->GetVidByID( intval($id) );
+			$this->media = $this->GetVidByID( $id );
+		}
 		
 		// remove the code in a feed
 		if ( is_feed() ) {
@@ -361,12 +364,16 @@ class wordTubeClass {
 	function GetVidByID($id  = 0) {
 
 		global $wpdb;
-
+		error_log("GetVidByID id=".$id);
 		// Get cache if exist. Does not cache not numeric id.
+		//TODO remove int limit  
 		$dbresult = false;
-		if ( $this->use_cache === true && is_numeric($id) ) { // Use cache
+		//if ( $this->use_cache === true && is_numeric($id) ) { // Use cache
+		if ( $this->use_cache === true  ) { // Use cache
 
 			if ( $cache = wp_cache_get( 'media', 'wordtube' ) ) {
+				$strcache=print_r($cache,true);
+				error_log("GetVidByID strcache=".$strcache);
 				if ( isset( $cache[$id] ) ) {
 					$dbresult = $cache[$id];
 				}
@@ -387,7 +394,8 @@ class wordTubeClass {
 			$dbresult = $wpdb->get_row('SELECT * FROM '.$wpdb->wordtube.$query);
 
 			// Set cache
-			if ( $this->use_cache === true && is_numeric($id) ) { // Use cache
+			//if ( $this->use_cache === true && is_numeric($id) ) { // Use cache
+			if ( $this->use_cache === true ) { // Use cache
 				$cache[$id] = $dbresult;
 				wp_cache_set('media', $cache, 'wordtube');
 			}

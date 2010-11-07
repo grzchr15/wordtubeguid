@@ -154,7 +154,7 @@ class wordTube_shortcodes {
 		
 		// if the page is a single page we look for the autostart option
 		$auto = (is_single() && $wordTube->options['startsingle']);
-		
+		error_log("show_media id=".$id);
 		// Get now the video data
 		$media = $wordTube->GetVidByID( $id );
 		
@@ -187,8 +187,9 @@ class wordTube_shortcodes {
 		
 		$dbresult = false;
 		
-		if ( !in_array( $id, $wordTube->PLTags) && is_numeric($id) )
-			$dbresult = $wpdb->get_row('SELECT * FROM '.$wpdb->wordtube_playlist.' WHERE pid = '.$id);
+		//TODO remove int limit if ( !in_array( $id, $wordTube->PLTags) && is_numeric($id) )
+		if ( !in_array( $id, $wordTube->PLTags)  )
+			$dbresult = $wpdb->get_row("SELECT * FROM ".$wpdb->wordtube_playlist." WHERE pid = '".$id."'");
 		
 		// check for tags	
 		if ( ($dbresult) || in_array( $id, $wordTube->PLTags) )
@@ -203,11 +204,13 @@ class wordTube_shortcodes {
 		
 		global $wordTube, $wpdb;
 		$text = $this->convert_shortcode($text);
-		
+
 		// search for videos
-		$search = "/\[media id=(\d+)(?: width=)?(\d+)?(?: height=)?(\d+)?\]/";
+		//TODO remove int limit $search = "/\[media id=(\d+)(?: width=)?(\d+)?(?: height=)?(\d+)?\]/";
+		$search = "/\[media id=(\w+)(?: width=)?(\d+)?(?: height=)?(\d+)?\]/";
 		if (preg_match_all($search, $text, $matches, PREG_SET_ORDER)) {
 			foreach ($matches as $match) {
+				error_log("excerpt_shortcodes id=".$id);
 				$media = $wordTube->GetVidByID($match[1]);
 				$width = $match[2]; 
 				$height = $match[3]; 
@@ -234,8 +237,9 @@ class wordTube_shortcodes {
 			foreach ($matches as $match) {
 				$id = $match[1];
 				
-				if (!in_array($id, $wordTube->PLTags) && is_numeric($id))
-					$dbresult = $wpdb->get_row('SELECT * FROM '.$wpdb->wordtube_playlist.' WHERE pid = '.$id);
+				//TODO remote int limit if (!in_array($id, $wordTube->PLTags) && is_numeric($id))
+				if ( !in_array( $id, $wordTube->PLTags)  )
+					$dbresult = $wpdb->get_row("SELECT * FROM ".$wpdb->wordtube_playlist." WHERE pid = '".$id."'");
 	
 				if (($dbresult) || in_array($id, $wordTube->PLTags))
 					$out = $wordTube->ReturnPlaylist($id, $width, $height);
