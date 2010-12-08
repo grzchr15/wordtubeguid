@@ -1,4 +1,6 @@
 #summary Exporting wordtubeguid content as Mediafeed
+
+#sidebar TableOfContents 
 =Feeds from wordtubeguid =
 == Introduction ==
 
