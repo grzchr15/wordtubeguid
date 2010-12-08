@@ -1,0 +1,13 @@
+#summary Exporting wordtubeguid content as Mediafeed
+=Feeds from wordtubeguid =
+== Introduction ==
+
+Media RSS Module - RSS 2.0 Module
+"Media RSS" Specification Version 1.5.0
+
+http://video.search.yahoo.com/mrss
+
+
+== Details of Export/Import Plugin ==
+
+To be done
