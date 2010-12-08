@@ -21,3 +21,7 @@
   * myextractXML.php
     make `*`.mp4 also possible
   * wordtube.php
+
+= Planning or export/import Plugin =
+
+FeedsFromWordtubeguid
