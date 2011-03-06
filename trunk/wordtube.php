@@ -31,7 +31,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 global $wp_version;
 
 // The current version
-define('WORDTUBE_VERSION', '2.4');
+define('WORDTUBE_VERSION', '2.4a');
 
 if ( version_compare($wp_version, '2.8', '<') ){
 	add_action('admin_notices', create_function('', 'echo \'<div id="message" class="error fade"><p><strong>' . __('Sorry, wordTube works only under WordPress 2.8 or higher',"wpTube") . '</strong></p></div>\';'));

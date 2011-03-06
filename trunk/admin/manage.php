@@ -32,8 +32,8 @@ class wordTubeManage extends wordTubeAdmin  {
 		register_taxonomy( WORDTUBE_TAXONOMY, 'wordtube', array('update_count_callback' => '_update_media_term_count') );
 		
 		// check for player
-		if (!file_exists(ABSPATH . $this->options['path'] ) )
-			$this->render_error( __('The Flash player is not detected. Please recheck if you uploaded it and verify the path in the wordTube settings.','wpTube') );
+		//if (!file_exists(ABSPATH . $this->options['path'] ) )
+		//	$this->render_error( __('The Flash player is not detected. Please recheck if you uploaded it and verify the path in the wordTube settings.','wpTube') );
 
 		// Manage upload dir
 		add_filter('upload_dir', array(&$this, 'upload_dir'));
@@ -147,7 +147,7 @@ class wordTubeManage extends wordTubeAdmin  {
 
 		// check for page navigation
 		$page     = ( isset($_REQUEST['apage']))    ? (int) $_REQUEST['apage'] : 1;
-		$sort     = ( isset($_REQUEST['sort']))     ? $_REQUEST['sort'] :'DESC';
+		$sort     = ( isset($_REQUEST['sort']))     ? $_REQUEST['sort']   : 'DESC';
 		$search   = ( isset($_REQUEST['search']))   ? $_REQUEST['search'] : '';
 		$filter   = ( isset($_REQUEST['filter']))   ? $_REQUEST['filter'] : 'any';
 		$plfilter = ( isset($_REQUEST['plfilter'])) ? $_REQUEST['plfilter'] :'0';
@@ -229,7 +229,7 @@ class wordTubeManage extends wordTubeAdmin  {
 					<tr>
 						<th id="id" class="manage-column column-id" scope="col"><?php _e('ID','wpTube'); ?></th>
 						<th id="title" class="manage-column column-title" scope="col"><?php _e('Title','wpTube'); ?></th>
-						<th id="author" class="manage-column column-author" scope="col"><?php _e('Creator','wpTube'); ?></th>					
+						<th id="author" class="manage-column column-author" scope="col"><?php _e('Creator','wpTube'); ?></th>
 						<th id="path" class="manage-column column-path"  scope="col"><?php _e('Path','wpTube'); ?></th>
 						<th id="counter" class="manage-column column-counter"  scope="col"><?php _e('Views','wpTube'); ?></th>
 						<?php if ($pledit) { ?>
@@ -317,12 +317,10 @@ class wordTubeManage extends wordTubeAdmin  {
 	
 		global $wpdb;
 
-		$strshow_edit="SELECT * FROM $wpdb->wordtube WHERE vid = '$this->act_vid'";
-		error_log("manage.php show_edit =".$strshow_edit);
-		$media = $wpdb->get_row("SELECT * FROM $wpdb->wordtube WHERE vid = '$this->act_vid'");
+		$media = $wpdb->get_row( $wpdb->prepare("SELECT * FROM $wpdb->wordtube WHERE vid = %s", $this->act_vid) ); 
 		$act_name = esc_attr(stripslashes($media->name));
 		$act_creator = esc_attr(stripslashes($media->creator));
-		$act_desc = esc_attr(stripslashes($media->description));
+		$act_desc = esc_html(stripslashes($media->description));
 		$act_filepath = stripslashes($media->file);
 		$act_image = stripslashes($media->image);
 		$act_link = stripslashes($media->link);
@@ -569,10 +567,46 @@ class wordTubeManage extends wordTubeAdmin  {
 		if ($this->mode == 'plyedit')	{
 			//TODO remove int limit $update = $wpdb->get_row("SELECT * FROM $wpdb->wordtube_playlist WHERE pid = {'$this->act_pid'} ");
 			$update = $wpdb->get_row("SELECT * FROM $wpdb->wordtube_playlist WHERE pid = '$this->act_pid' ");
+			$pmedia = $wpdb->get_results("SELECT * FROM $wpdb->wordtube, $wpdb->wordtube_med2play WHERE vid = media_id AND playlist_id = {$this->act_pid} ORDER BY porder");
 		}
 		?>
 
 		<!-- Edit Playlist -->
+		<?php if ($this->mode == 'plyedit') { ?> 
+		<style type="text/css"> 
+		#sortableitems { 
+			list-style-type: none; 
+			margin: 0; 
+			padding: 0; 
+			width: 100%; 
+		} 
+		#sortableitems li { 
+			margin: 0 3px 3px 3px; 
+			padding: 0 0.4em 0.7em 1.5em; 
+			font-size: 0.9em; 
+		} 
+		#sortableitems li span { 
+			position: absolute; 
+			margin-left: -1.3em; 
+		} 
+		</style> 
+		<script type="text/javascript"> 
+			jQuery(function() { 
+			jQuery("#sortableitems").sortable(); 
+			jQuery("#sortableitems").disableSelection(); 
+			}); 
+		
+			function get_sortorder( objname ) { 
+					var result = jQuery('#' + objname).sortable('toArray'); 
+					return result.join(':'); 
+			} 
+		
+			function save_sortorder( js_objname, storage_txtobj ) { 
+					var sort_list = get_sortorder(js_objname); 
+					storage_txtobj.value = sort_list; 
+			} 
+		</script> 
+		<?php } ?> 
 		<div class="wrap">
 			<?php screen_icon(); ?>
 			<h2><?php _e('Manage Playlist','wpTube'); ?></h2>
@@ -600,8 +634,10 @@ class wordTubeManage extends wordTubeAdmin  {
 							echo "<td>".stripslashes($table->playlist_name)."</td>\n";
 							echo "<td>".stripslashes($table->playlist_desc)."</td>\n";
 							echo "<td><a href=\"$this->base_page&amp;mode=plyedit&amp;pid=$table->pid#addplist\" class=\"edit\">".__('Edit')."</a></td>\n";
-							echo "<td><a href=\"$this->base_page&amp;mode=plydel&amp;pid=$table->pid\" class=\"delete\" onclick=\"javascript:check=confirm( '".__("Delete this file ?",'wpTube')."');if(check==false) return false;\">".__('Delete')."</a></td>\n";
-							echo '</tr>';
+							if ($table->pid == 1) 
+ 	                            echo "<td>&nbsp;</td>\n"; 
+							else 
+ 	                            echo "<td><a href=\"$this->base_page&amp;mode=plydel&amp;pid=$table->pid\" class=\"delete\" onclick=\"javascript:check=confirm( '".__("Delete this file ?",'wpTube')."');if(check==false) return false;\">".__('Delete')."</a></td>\n"; echo '</tr>';
 							$i++;
 						}
 					} else {
@@ -620,16 +656,47 @@ class wordTubeManage extends wordTubeAdmin  {
 					if ($this->mode == 'plyedit') echo _e('Update Playlist','wpTube');
 					?></h3>
 					<div class="inside">
-						<form id="addplist" action="<?php echo $this->base_page; ?>" method="post">
+						<form id="addplist" name="addplist" action="<?php echo $this->base_page; ?>" method="post">
 							<input type="hidden" value="<?php echo $this->act_pid ?>" name="p_id" />
+							<input type="hidden" name="sortorder" value="ASC" /> 
+							<input type="hidden" name="pmedia_sortorder" value="" />
 							<p><?php _e('Name:','wpTube'); ?><br/><input type="text" value="<?php if ( isset($update) ) echo $update->playlist_name ?>" name="p_name"/></p>
-							<p><?php _e('Description: (optional)','wpTube'); ?><br/><textarea name="p_description" rows="3" cols="50" style="width: 97%;"><?php if ( isset($update) ) echo $update->playlist_desc ?></textarea></p>
-							<p><?php _e('Media ID sorting order:','wpTube'); ?> <input name="sortorder" type="radio" value="ASC"  <?php if ( isset($update) && $update->playlist_order == 'ASC') echo 'checked="checked"'; ?> /> <?php _e('ascending','wpTube'); ?> 
-							<input name="sortorder" type="radio" value="DESC"  <?php if ( isset($update) && $update->playlist_order == 'DESC') echo 'checked="checked"'; ?> /> <?php _e('descending','wpTube'); ?></p>	
-							<div class="submit">
+							<p><?php _e('Description: (optional)','wpTube'); ?><br/><textarea name="p_description" rows="3" cols="50" style="width: 97%;"><?php if ( isset($update) ) echo stripslashes($update->playlist_desc); ?></textarea></p> 
+		
+							<h3><?php echo _e('Playlist media sort order (Just drag into your desired order)','wpTube'); ?></h3> 
+							<table class="widefat" cellspacing="0"> 
+									<thead> 
+										<tr> 
+												<th width='30%' scope="col"><?php _e('Title','wpTube'); ?></th> 
+												<th width='20%' scope="col"><?php _e('Creator','wpTube'); ?></th> 
+												<th width='50%' scope="col"><?php _e('Description','wpTube'); ?></th> 
+										</tr> 
+									</thead> 
+							</table> 
+							<ul id="sortableitems"> 
+									<?php 
+									if($this->mode == 'plyedit' && $pmedia) { 
+										foreach($pmedia as $mitem) { 
+												echo '<li class="ui-state-default" id="'.stripslashes($mitem->vid).'">'; 
+												echo '<span class="ui-icon ui-icon-arrowthick-2-n-s"></span>'; 
+												echo '<table cellspacing="0" width="100%">'; 
+												echo "<td width='30%' valign='top'>".stripslashes($mitem->name)."</td>\n"; 
+												echo "<td width='20%' valign='top'>".stripslashes($mitem->creator)."</td>\n"; 
+												echo "<td width='50%' valign='top'>".stripslashes($mitem->description)."</td>\n"; 
+												echo '</tr>'; 
+												echo '</table>'; 
+												echo "</li>\n"; 
+										} 
+									} else { 
+										echo '<table cellspacing="0" width="100%">'; 
+										echo '<tr><td colspan="3"><br><b>'.__('No media items in this playlist','wpTube').'</b></td></tr>'; 
+										echo '</table>'; 
+									} 
+									?> 
+							</ul> <div class="submit">
 								<?php
 									if ($this->mode == 'playlist') echo '<input type="submit" name="add_playlist" value="' . __('Add Playlist','wpTube') . '" class="button-primary" />';
-									if ($this->mode == 'plyedit') echo '<input type="submit" name="update_playlist" value="' . __('Update Playlist','wpTube') . '" class="button-primary" />';
+									if ($this->mode == 'plyedit') echo '<input type="submit" name="update_playlist" onclick="save_sortorder(\'sortableitems\', this.form.pmedia_sortorder);" value="' . __('Update Playlist','wpTube') . '" class="button-primary" />'; 
 								?>
 								<input type="submit" name="cancel" value="<?php _e('Cancel','wpTube'); ?>" class="button-secondary" />
 							</div>
