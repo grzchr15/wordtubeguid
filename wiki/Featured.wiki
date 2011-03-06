@@ -1,3 +1,8 @@
+= V2.4.0guid / 06.03.2011 =  
+Updated wordtubeguid to match wordtube version 2.4.0 from alex.rabe
+Diff is just mediaid, playlistid, is a string to move it easier between wordpress instances
+
+
 #summary Changes made to version 2.3.1 from alex.rabe
 
 = Introduction =
