@@ -10,7 +10,7 @@
 /******************************************************************
 /* get_playlist by ID
 ******************************************************************/
-function get_playlistname_by_ID($pid = 0) {
+function get_playlistname_by_ID($pid = "0") {
 	global $wpdb;
 	error_log("get_playlistname_by_ID pid=".$pid);
 	//TODO remove int limit $pid    = (int) $pid;
