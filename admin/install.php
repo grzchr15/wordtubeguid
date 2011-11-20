@@ -41,10 +41,9 @@ function wordtube_install() {
 		}
 	        
 		if (!$wfound) {
-		 
+		 //vid MEDIUMINT(10) NOT NULL AUTO_INCREMENT PRIMARY KEY,
 			$sql = "CREATE TABLE ".$table_name." (
-				//vid MEDIUMINT(10) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-				vid varchar(32) NOT NULL PRIMARY KEY,
+					vid varchar(32) NOT NULL PRIMARY KEY,
 	      			name MEDIUMTEXT NULL,
 	      			creator MEDIUMTEXT NULL,
 					description LONGTEXT NULL,
@@ -62,9 +61,8 @@ function wordtube_install() {
 		}
 		
 		if (!$pfound) {
-		 
+		 //pid BIGINT(10) NOT NULL AUTO_INCREMENT PRIMARY KEY ,
 		 	$sql = "CREATE TABLE ".$table_playlist." (
-				//pid BIGINT(10) NOT NULL AUTO_INCREMENT PRIMARY KEY ,
 				pid varchar(32) NOT NULL PRIMARY KEY ,
 				playlist_name VARCHAR(200) NOT NULL ,
 				playlist_desc LONGTEXT NULL,
@@ -75,10 +73,9 @@ function wordtube_install() {
 		}
 
 		if (!$mfound) {
-		 
+		 //TODO media_id BIGINT(10) NOT NULL DEFAULT '0',
 		 	$sql = "CREATE TABLE ".$table_med2play." (
 				rel_id BIGINT(10) NOT NULL AUTO_INCREMENT PRIMARY KEY ,
-				//TODO media_id BIGINT(10) NOT NULL DEFAULT '0',
 				media_id varchar(32) NOT NULL DEFAULT '0',
 				playlist_id varchar(32) NOT NULL DEFAULT '0',
 				porder MEDIUMINT(10) NOT NULL DEFAULT '0'
